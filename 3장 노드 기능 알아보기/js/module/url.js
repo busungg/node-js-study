@@ -46,3 +46,16 @@ console.log("searchParams.toString()", myURL.searchParams.toString());
 console.log("origin myURL", myURL);
 
 myURL.search = myURL.searchParams.toString();
+
+console.log(
+  "================================================================="
+);
+console.log("queryString");
+console.log(
+  "================================================================="
+);
+
+const querystring = require('querystring');
+const query = querystring.parse(parsedUrl.query);
+console.log('querystring.parse()', query);
+console.log('querystring.stringify()', querystring.stringify(query));
