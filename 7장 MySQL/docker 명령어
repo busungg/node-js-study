@@ -1,3 +1,4 @@
 docker run --rm -d --name testdb -e MYSQL_ROOT_PASSWORD=1 -p 127.0.0.1:3306:3306 mysql
+docker run --rm -d --name testdb -e MYSQL_ROOT_PASSWORD=1 -p 3306:3306 mysql
 
 docker run --name some-mysql -e MYSQL_ROOT_PASSWORD=my-secret-pw -d mysql:tag

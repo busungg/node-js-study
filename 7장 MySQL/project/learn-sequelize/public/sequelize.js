@@ -50,12 +50,12 @@ const getComment = (id) => {
     });
 };
 
-const editComment = (id, newComment) => {
+const editComment = (id, newComment, userId) => {
   const xhr = new XMLHttpRequest();
   xhr.onload = () => {
     if (xhr.status === 200) {
       console.log(xhr.responseText);
-      getComment(id);
+      getComment(userId);
     } else {
       console.error(xhr.responseText);
     }
@@ -65,12 +65,12 @@ const editComment = (id, newComment) => {
   xhr.send(JSON.stringify({ comment: newComment }));
 };
 
-const removeComment = (id) => {
+const removeComment = (id, userId) => {
   const xhr = new XMLHttpRequest();
   xhr.onload = () => {
     if (xhr.status === 200) {
       console.log(xhr.responseText);
-      getComment(id);
+      getComment(userId);
     } else {
       console.error(xhr.responseText);
     }
@@ -207,7 +207,7 @@ const renderComments = (comments) => {
     row.appendChild(td);
 
     td = document.createElement("td");
-    td.textContent = comment.commenter["user.name"];
+    td.textContent = comment["user.name"];
     row.appendChild(td);
 
     td = document.createElement("td");
@@ -223,7 +223,7 @@ const renderComments = (comments) => {
         return alert("내용을 반드시 입력하셔야 합니다.");
       }
 
-      editComment(id, newComment);
+      editComment(comment.id, newComment, comment["user.id"]);
     });
     td.appendChild(edit);
     row.appendChild(td);
@@ -232,7 +232,7 @@ const renderComments = (comments) => {
     const remove = document.createElement("button");
     remove.textContent = "삭제";
     remove.addEventListener("click", () => {
-      removeComment(id);
+      removeComment(comment.id, comment["user.id"]);
     });
     td.appendChild(remove);
     row.appendChild(td);
