@@ -1,5 +1,5 @@
 module.exports = (sequelize, DataTypes) => {
-  return sequelize.define(
+  const model = sequelize.define(
     "hashtag",
     {
       title: {
@@ -13,4 +13,10 @@ module.exports = (sequelize, DataTypes) => {
       paranoid: true,
     }
   );
+
+  model.associate = (db) => {
+    model.belongsToMany(db.post, { through: "PostHashtag" });
+  };
+
+  return model;
 };

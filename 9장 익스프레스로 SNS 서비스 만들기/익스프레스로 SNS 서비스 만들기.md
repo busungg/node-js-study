@@ -124,3 +124,20 @@
 8.  기본적인 라우터와 템플릿 엔진도 만들어 봅시다.
 
 # 데이터베이스 세팅하기
+
+1. **_같은 테이블 간 N:M 관계_**
+   - 모델 이름과 컬럼 이름을 따로 정해주어야 합니다. 모델 이름이 UserUser일 수는 없기에 through 옵션으로 생성할 모델 이름을 Follow로 정했습니다.
+   - Follow 모델에서 사용자 아이디를 저장하는 컬럼 이름이 둘 다 userId면 누가 팔로워고 누가 팔로잉 중인지 구분이 되지 않으므로 따로 설정해주어야 합니다. foreignKey 옵션에 각각 followerId, followingId를 넣어주어 두 사용자 아이디를 구별했습니다.
+   - as 옵션은 시퀄라이즈가 JOIN 작업 시 사용하는 이름입니다. as에 등록한 이름을 바탕으로 시퀄라이즈는 getFollowings, getFollowers, addFollowing, addFollower 등의 메서드를 자동으로 추가 합니다.
+
+# Passport 모듈로 로그인 구현하기
+
+회원가입과 로그인은 직접 구현할 수도 있지만, 세션과 쿠키 처리 등 복잡한 작업이 많으므로 검증된 모듈을 사용하는 것이 좋습니다. 바로 Passport를 사용하는 것입니다. 이름처럼 우리의 서비스를 사용할 수 있게 해주는 여권 역할을 합니다.
+
+요즘에는 서비스에 로그인을 할 때 SNS 서비스 계정으로 로그인하기도 합니다. 이 또한 Passport를 사용해서 해결할 수 있습니다.
+
+먼저 Passport 관련 패키지들을 설치합니다.
+
+```
+npm i passport passport-local passport-kakao bcrypt
+```
