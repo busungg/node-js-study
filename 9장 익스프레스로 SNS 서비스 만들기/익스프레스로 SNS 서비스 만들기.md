@@ -141,3 +141,119 @@
 ```
 npm i passport passport-local passport-kakao bcrypt
 ```
+
+설치 후 Passport 모듈을 미리 app.js와 연결합시다. Passport 모듈은 조금 뒤에 만듭니다.
+
+```
+const passport = require("passport");
+const flash = require("connect-flash");
+require("dotenv").config();
+
+const pageRouter = require("./routes/page");
+const { sequelize } = require("./models");
+const passportConfig = require("./passport");
+
+const app = express();
+sequelize.sync();
+passportConfig(passport);
+
+...
+app.use(
+  session({
+    resave: false,
+    saveUninitialized: false,
+    secret: process.env.COOKIE_SECRET,
+    cookie: {
+      httpOnly: true,
+      secure: false,
+    },
+  })
+);
+app.use(flash());
+app.use(passport.initialize());
+app.use(passport.session);
+```
+
+**_require('./passport') 는 require('./passport/index.js')와 같습니다._** 폴더 내의 index.js 파일은 require시 이름을 생략할 수 있습니다.  
+passport.initialize() 미들웨어는 요청(req 객체)에 passport 설정을 심고, **_passport.session() 미들웨어는 req.session 객체에 passport 정보를 저장합니다. req.session 객체는 express-session에서 생성하는 것이므로 passport 미들웨어는 express-session 미들웨어보다 뒤에 연결해야 합니다._**
+
+이제 app.js와 연결했던 Passport 모듈을 작성합니다.
+
+```
+const local = require("./localStrategy");
+const kakao = require("./kakaoStrategy");
+const { user } = require("../models");
+
+module.exports = (passport) => {
+  passport.serializeUser((user, done) => {
+    done(null, user.id);
+  });
+
+  passport.deserializeUser((id, done) => {
+    user
+      .find({
+        where: { id },
+      })
+      .then((user) => done(null, user))
+      .catch((err) => done(err));
+  });
+
+  local(passport);
+  kakao(passport);
+};
+```
+
+모듈 내부를 보면 passport.serializeUser와 passport.deserializeUser가 있습니다. 이 부분이 Passport를 이해하는 핵심입니다.
+
+serializeUser는 req.session 객체에 어떤 데이터를 저장할 지 선택합니다. 매개변수로 user를 받아, done 함수에 두 번째 인자로 user.id를 넘기고 있습니다. done 함수의 첫 번째 인자는 에러 발생 시 사용하는 것이므로 두 번째 인자가 중요합니다. 세션에 사용자 정보를 모두 저장하면 세션의 용량이 커지고 데이터 일관성에 문제가 발생하므로 사용자의 아이디만 저장하라고 명령한 것입니다.
+
+deserializeUser는 매 요청 시 실행됩니다. passport.session() 미들웨어가 이 메서드를 호출합니다.  
+좀 전에 serializeUser에서 세션에 저장했던 아이디를 받아 데이터베이스에서 사용자 정보를 조회합니다.  
+조회한 정보를 req.user에 저장하므로 앞으로 req.user를 통해 로그인한 사용자의 정보를 가져올 수 있습니다.
+
+즉 serializeUser는 사용자 정보 객체를 세션에 아이디로 저장하는 것이고, deserializeUser는 세션에 저장한 아이디를 통해 사용자 정보 객체를 불러오는 것입니다. 세션에 불필요한 데이터를 담아두지 않기 위한 과정입니다.
+
+전체 과정은 다음과 같습니다.
+
+1. 로그인 요청이 들어옴
+2. passport.authenticate 메서드 호출
+3. 로그인 전략 수행
+4. 로그인 성공 시 사용자 정보 객체와 함께 req.login 호출
+5. req.login 메서드가 passport.serializeUser 호출
+6. req.session에 사용자 아이디만 저장
+7. 로그인 완료
+
+다음은 로그인 이후의 과정입니다.
+
+1. 모든 요청에 passport.session() 미들웨어가 passport.deserializeUser 메서드 호출
+2. req.session에 저장된 아이디로 데이터베이스에서 사용자 조회
+3. 조회된 사용자 정보를 req.user에 저장
+4. 라우터에서 req.user 객체 사용 가능
+
+### 1. 로컬 로그인 구현하기
+
+로컬 로그인이란 다른 SNS 서비스를 통해 로그인하지 않고, 자체적으로 회원가입 후 로그인하는 것을 의미합니다. 즉, 아이디/비밀번호 또는 이메일/비밀번호를 통해 로그인하는 것입니다.  
+Passport에서 이를 구현하려면 passport-local 모듈이 필요합니다. 이미 설치했으므로 로컬 로그인 전략만 세우면 됩니다. 로그인에만 해당하는 전략이므로 회원가입은 따로 만들어야 합니다.
+
+회원가입, 로그인, 로그아웃 라우터를 먼저 만들어봅시다. 이러한 라우터는 접근 조건이 있습니다.  
+로그인한 사용자는 회원가입과 로그인 라우터에 접근하면 안됩니다. 마찬가지로 로그인하지 않은 사용자는 로그아웃 라우터에 접근하면 안됩니다. **_따라서 라우터에 접근 권한을 제어하는 미들웨어가 필요합니다. 미들웨어를 만들며 Passport가 req 객체에 추가해주는 isAuthenticated 메서드를 알아봅시다._**
+
+```
+exports.isLoggedIn = (req, res, next) => {
+  if (req.isAuthenticated()) {
+    next();
+  } else {
+    res.status(403).send("로그인 필요");
+  }
+};
+
+exports.isNotLoggedIn = (req, res, next) => {
+  if (!req.isAuthenticated()) {
+    next();
+  } else {
+    res.redirect("/");
+  }
+};
+```
+
+Passport는 req 객체에 isAuthenticated 메서드를 추가합니다. 로그인 중이면 req.isAuthenticated()가 true고, 아니면 false 입니다. 따라서 로그인 여부를 이 메서드로 파악할 수 있습니다.
