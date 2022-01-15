@@ -16,7 +16,7 @@ module.exports = (passport) => {
       //done은 passport.authenticate의 콜백 함수입니다.
       async (email, password, done) => {
         try {
-          const exUser = await user.find({ where: { email } });
+          const exUser = await user.findOne({ where: { email } });
           if (exUser) {
             const result = await bcrypt.compare(password, exUser.password);
             if (result) {

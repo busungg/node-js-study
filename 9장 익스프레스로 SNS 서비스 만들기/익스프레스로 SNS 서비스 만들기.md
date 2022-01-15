@@ -257,3 +257,13 @@ exports.isNotLoggedIn = (req, res, next) => {
 ```
 
 Passport는 req 객체에 isAuthenticated 메서드를 추가합니다. 로그인 중이면 req.isAuthenticated()가 true고, 아니면 false 입니다. 따라서 로그인 여부를 이 메서드로 파악할 수 있습니다.
+
+# Multer 모듈로 이미지 업로드 구현하기
+
+이미지는 보통 input[type=file] 태그와 form 태그를 통해서 업로드합니다.  
+이때 form의 인코딩 타입은 multipart/form-data인 경우가 많습니다. 이런 형식으로 올라온 데이터는 직접 처리하기 힘드므로 multipart 처리용 모듈을 사용하는 것이 좋습니다.
+
+이미지를 어떻게 저장할 것인지는 서비스의 특성에 따라 달라집니다.  
+test project는 input 태그를 통해 이미지를 선택할 때 먼저 업로드를 진행하고,  
+업로드된 사진 주소를 다시 클라이언트에 알려 줄 것입니다.  
+게시글 저장 시에는 이미지 데이터 대신 이미지 주소를 저장합니다.

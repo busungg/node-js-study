@@ -17,8 +17,20 @@ module.exports = (passport) => {
   //조회한 정보를 req.user에 저장하므로 req.user를 통해 로그인한 사용자의 정보를 가져옴
   passport.deserializeUser((id, done) => {
     user
-      .find({
+      .findOne({
         where: { id },
+        include: [
+          {
+            model: user,
+            attributes: ["id", "nick"],
+            as: "Followers",
+          },
+          {
+            model: user,
+            attributes: ["id", "nick"],
+            as: "Followings",
+          },
+        ],
       })
       .then((user) => done(null, user))
       .catch((err) => done(err));

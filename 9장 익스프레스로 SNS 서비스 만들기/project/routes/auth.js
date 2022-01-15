@@ -6,9 +6,13 @@ const { user } = require("../models");
 
 const router = express.Router();
 router.post("/join", isNotLoggedIn, async (req, res, next) => {
+  console.log("===========================================");
+  console.dir(user);
+  console.log("===========================================");
+
   const { email, nick, password } = req.body;
   try {
-    const exUser = await user.find({ where: { email } });
+    const exUser = await user.findOne({ where: { email } });
     if (exUser) {
       //기존에 같은 이메일로 가입한 사용자가 있는지 확인합니다.
       req.flash("joinError", "이미 가입된 이메일입니다.");
