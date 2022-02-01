@@ -1,13 +1,12 @@
 const express = require("express");
 const jwt = require("jsonwebtoken");
 
-const { verifyToken, deprecated } = require("./middlewares");
+const { verifyToken, apiLimiter } = require("./middlewares");
 const { domain, user, post, hashtag } = require("../models");
 
 const router = express.Router();
 
-router.use(deprecated); //v1 사용 시 경고 메시지를 띄어줍니다.
-//라우터 앞에 deprecated 미들웨어를 추가하여 v1으로 접근한 모든 요청에 deprecated 응답을 보내도록 합니다.
+router.use(apiLimiter);
 
 router.post("/token", async (req, res) => {
   const { clientSecret } = req.body;
@@ -36,7 +35,7 @@ router.post("/token", async (req, res) => {
       },
       process.env.JWT_SECRET,
       {
-        expiresIn: "1m",
+        expiresIn: "30m",
         issuer: "nodebird",
       }
     );
