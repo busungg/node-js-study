@@ -42,11 +42,9 @@ app.use((req, res, next) => {
   if (!req.session.color) {
     const colorHash = new ColorHash();
     req.session.color = colorHash.hex(req.sessionID);
-
-    console.log("session 미존재", req.session);
   }
 
-  console.log("session 존재", req.session);
+  console.log("app session", req.session);
   next();
 });
 

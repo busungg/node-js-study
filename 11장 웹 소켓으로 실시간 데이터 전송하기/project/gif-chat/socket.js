@@ -1,14 +1,7 @@
 const SocketIO = require("socket.io");
 const axios = require("axios");
 
-const sharedsession = require("express-socket.io-session");
-
 module.exports = (server, app, sessionMiddleware) => {
-  console.log("==================================================");
-  console.log("sessionMiddleware");
-  console.log(sessionMiddleware);
-  console.log("==================================================");
-
   const io = SocketIO(server, { path: "/socket.io" });
 
   //라우터에서 io 객체를 쓸 수 있게 저장해둡니다.
@@ -23,25 +16,28 @@ module.exports = (server, app, sessionMiddleware) => {
 
   //io.use 메서드에 미들웨어를 장착할 수 있습니다.
   //이 부분은 모든 웹 소켓 연결 시마다 실행됩니다. 세션 미들웨어에 요청 객체, 응답 객체, next 함수를 인자로 넣어주면 됩니다.
-  io.use((socket, next) => {
-    sessionMiddleware(socket.request, socket.request.res, next);
+  room.use((socket, next) => {
+    sessionMiddleware(socket.request, {}, next);
   });
-  //io.use(sharedsession(sessionMiddleware));
 
   //https://www.inflearn.com/questions/89800
 
   room.on("connection", (socket) => {
     console.log("room 네임스페이스에 접속");
-
-    console.log("session socket 존재", socket.request);
+    console.log("room socket session", socket.request.session);
 
     socket.on("disconnect", () => {
       console.log("room 네임스페이스 접속 해제");
     });
   });
 
+  chat.use((socket, next) => {
+    sessionMiddleware(socket.request, {}, next);
+  });
+
   chat.on("connection", (socket) => {
     console.log("chat 네임스페이스에 접속");
+    console.log("chat socket session", socket.request.session);
     const req = socket.request;
     const {
       headers: { referer },
@@ -70,7 +66,7 @@ module.exports = (server, app, sessionMiddleware) => {
       console.log(userCount);
       if (userCount === 0) {
         axios
-          .delete(`http://localhost:8005/room/${roomId}`)
+          .delete(`http://localhost:3000/room/${roomId}`)
           .then(() => {
             console.log("방 제거 요청 성공");
           })
