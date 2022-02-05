@@ -1,5 +1,5 @@
-module.exports = (sequelize, DataTypes) =>
-  sequelize.define(
+module.exports = (sequelize, DataTypes) => {
+  const model = sequelize.define(
     "user",
     {
       email: {
@@ -12,7 +12,7 @@ module.exports = (sequelize, DataTypes) =>
         allowNull: false,
       },
       password: {
-        type: DataTypes.STIRNG(100),
+        type: DataTypes.STRING(100),
         allowNull: true,
       },
       money: {
@@ -26,3 +26,10 @@ module.exports = (sequelize, DataTypes) =>
       paranoid: true,
     }
   );
+
+  model.associate = (db) => {
+    model.hasMany(db.Auction);
+  };
+
+  return model;
+};

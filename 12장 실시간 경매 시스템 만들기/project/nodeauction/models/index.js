@@ -31,7 +31,9 @@ fs.readdirSync(__dirname)
       sequelize,
       Sequelize.DataTypes
     );
-    db[model.name] = model;
+
+    const name = model.name;
+    db[`${name[0].toUpperCase()}${name.substring(1)}`] = model;
   });
 
 Object.keys(db).forEach((modelName) => {

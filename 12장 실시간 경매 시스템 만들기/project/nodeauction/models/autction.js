@@ -1,19 +1,15 @@
 module.exports = (sequelize, DataTypes) => {
   const model = sequelize.define(
-    "good",
+    "auction",
     {
-      name: {
-        type: DataTypes.STRING(40),
-        allowNull: false,
-      },
-      img: {
-        type: DataTypes.STRING(200),
-        allowNull: true,
-      },
-      price: {
+      bid: {
         type: DataTypes.INTEGER,
         allowNull: false,
         defaultValue: 0,
+      },
+      msg: {
+        type: DataTypes.STRING(100),
+        allowNull: true,
       },
     },
     {
@@ -23,8 +19,8 @@ module.exports = (sequelize, DataTypes) => {
   );
 
   model.associate = (db) => {
-    model.belongsTo(db.User, { as: "owner" });
-    model.belongsTo(db.User, { as: "sold" });
+    model.belongsTo(db.User);
+    model.belongsTo(db.Good);
   };
 
   return model;
