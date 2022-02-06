@@ -64,7 +64,7 @@ block content
         return time.textContent = hours + ':' + minutes + ':' + seconds;
       }
     };
-    var socket = io.connect('http://localhost:8010', {
+    var socket = io.connect('http://localhost:3000', {
       path: '/socket.io'
     });
     socket.on('bid', function (data) {

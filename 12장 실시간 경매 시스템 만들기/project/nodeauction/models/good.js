@@ -25,6 +25,7 @@ module.exports = (sequelize, DataTypes) => {
   model.associate = (db) => {
     model.belongsTo(db.User, { as: "owner" });
     model.belongsTo(db.User, { as: "sold" });
+    model.hasMany(db.Auction);
   };
 
   return model;

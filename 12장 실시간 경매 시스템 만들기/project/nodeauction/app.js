@@ -6,6 +6,7 @@ var logger = require("morgan");
 const session = require("express-session");
 const flash = require("connect-flash");
 const passport = require("passport");
+const checkAuction = require("./checkAuction");
 require("dotenv").config();
 
 var indexRouter = require("./routes/index");
@@ -13,6 +14,10 @@ const authRouter = require("./routes/auth");
 var usersRouter = require("./routes/users");
 const { sequelize } = require("./models");
 const passportConfig = require("./passport");
+
+//checkAuction을 서버에 연결합니다. 서버를 재시작하면 앞으로 서버를 시작할 때마나 낙찰자를 지정하는 작업을 수행합니다.
+//checkAuction의 코드는 app.js에 직접 작성해도 되지만 코드가 길어지므로 분리하였습니다.
+checkAuction();
 
 var app = express();
 sequelize.sync();
